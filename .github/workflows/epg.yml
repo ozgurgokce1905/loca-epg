@@ -14,11 +14,19 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 120
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
-          node-version: '20'
+          node-version: '22'
+
+      # GitHub, ACIK depolarda 60 gun hareket olmazsa zamanlanmis is'leri
+      # kendiliginden kapatiyor. Bu adim ~45 gunde bir depoyu "hareketli"
+      # gosterip kapanmayi onluyor. Yine de kapanirsa GitHub e-posta
+      # atiyor; Actions sekmesindeki "Enable workflow" dugmesi yeter.
+      - name: Workflow'u canli tut
+        continue-on-error: true
+        uses: gautamkrishnar/keepalive-workflow@v2
 
       # Bir kaynak bugun cekilemezse dunku verisi ayakta kalsin.
       - name: Onceki rehberi al
