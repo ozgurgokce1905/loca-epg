@@ -1,0 +1,65 @@
+name: Türkiye EPG
+
+on:
+  schedule:
+    - cron: '30 1 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  grab:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Toplayiciyi indir
+        run: git clone --depth 1 -b master https://github.com/iptv-org/epg.git grabber
+
+      - name: Bagimliliklari kur
+        working-directory: grabber
+        run: npm install
+
+      - name: Digiturk
+        continue-on-error: true
+        working-directory: grabber
+        run: npm run grab --- --sites=digiturk.com.tr --days=3 --maxConnections=5 --output=out/digiturk.xml
+
+      - name: TV Plus
+        continue-on-error: true
+        working-directory: grabber
+        run: npm run grab --- --sites=tvplus.com.tr --days=3 --maxConnections=5 --output=out/tvplus.xml
+
+      - name: D-Smart
+        continue-on-error: true
+        working-directory: grabber
+        run: npm run grab --- --sites=dsmart.com.tr --days=3 --maxConnections=5 --output=out/dsmart.xml
+
+      - name: Turksat Kablo
+        continue-on-error: true
+        working-directory: grabber
+        run: npm run grab --- --sites=turksatkablo.com.tr --days=3 --maxConnections=5 --output=out/turksat.xml
+
+      - name: Birlestir
+        run: node merge.js grabber/out turkiye.xml
+
+      - name: Sikistir
+        run: |
+          gzip -9 -c turkiye.xml > turkiye.xml.gz
+          ls -lh turkiye.xml turkiye.xml.gz
+
+      - name: Yayinla
+        run: |
+          git config user.name "epg-bot"
+          git config user.email "epg-bot@users.noreply.github.com"
+          git checkout --orphan guide
+          git rm -rf --cached . >/dev/null 2>&1 || true
+          git add -f turkiye.xml turkiye.xml.gz
+          git commit -m "EPG $(date -u '+%Y-%m-%d %H:%M UTC')"
+          git push -f origin guide
