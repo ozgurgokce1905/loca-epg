@@ -27,6 +27,9 @@ const GRABBER = 'grabber/out';
 
 // epgshare ustundeki dosya adlari  epg_ripper_<ONEK><sayi>.xml.gz  seklinde.
 // Bir ulke birden fazla onekle gecebiliyor (UK / GB gibi), hepsini deniyoruz.
+//
+// Kalibin disinda kalan dosyalar icin "ekDosyalar" var: Rusya'nin ulke
+// dosyasi yok, yerine adi tamamen farkli olan tek bir dosya duruyor.
 const ULKELER = [
   { kod: 'tr', ad: 'Türkiye', onekler: ['TR'] },
   { kod: 'gb', ad: 'Birleşik Krallık', onekler: ['UK', 'GB'] },
@@ -37,7 +40,12 @@ const ULKELER = [
   { kod: 'it', ad: 'İtalya', onekler: ['IT'] },
   { kod: 'pt', ad: 'Portekiz', onekler: ['PT'] },
   { kod: 'nl', ad: 'Hollanda', onekler: ['NL'] },
-  { kod: 'ru', ad: 'Rusya', onekler: ['RU'] },
+  {
+    kod: 'ru',
+    ad: 'Rusya',
+    onekler: ['RU'],
+    ekDosyalar: ['epg_ripper_viva-russia.ru.xml.gz'],
+  },
   { kod: 'gr', ad: 'Yunanistan', onekler: ['GR'] },
   { kod: 'bg', ad: 'Bulgaristan', onekler: ['BG'] },
 ];
@@ -99,7 +107,19 @@ function ulkeDosyalari(liste, ulke) {
       if (kalip.test(ad) && !bulunan.includes(ad)) bulunan.push(ad);
     }
   }
+  for (const ad of ulke.ekDosyalar || []) {
+    if (liste.includes(ad) && !bulunan.includes(ad)) bulunan.push(ad);
+  }
   return bulunan.sort();
+}
+
+// Bir ulke icin hicbir dosya bulunamadiginda, adinda onek gecen dosyalari
+// yaz. Boyle bir gun gelirse hangi ada tasindigini log'dan gorebiliyoruz.
+function benzerleriYaz(liste, ulke) {
+  const adaylar = liste.filter((ad) =>
+    ulke.onekler.some((o) => ad.toUpperCase().includes(o.toUpperCase()))
+  );
+  if (adaylar.length) console.log(`  benzer dosyalar: ${adaylar.join(', ')}`);
 }
 
 async function indirVeAc(ad) {
@@ -315,6 +335,7 @@ async function ana() {
     if (onceki) kaynaklar.push({ ad: 'onceki', xml: onceki });
 
     if (!kaynaklar.length) {
+      benzerleriYaz(liste, ulke);
       console.log('  hicbir kaynak yok, atlandi\n');
       ozet.push({ kod: ulke.kod, ad: ulke.ad, durum: 'kaynak yok', kanal: 0, program: 0 });
       continue;
