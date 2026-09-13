@@ -78,12 +78,7 @@ jobs:
         working-directory: grabber
         run: npm run grab --- --sites=digiturk.com.tr --days=2 --maxConnections=5 --output=out/digiturk.xml
 
-      - name: Turksat Kablo
-        continue-on-error: true
-        timeout-minutes: 20
-        working-directory: grabber
-        run: npm run grab --- --sites=turksatkablo.com.tr --days=2 --maxConnections=5 --output=out/turksat.xml
-
+      
       # ---- derleme --------------------------------------------------------
       - name: Derle
         run: node derle.js
