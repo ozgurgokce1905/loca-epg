@@ -21,12 +21,22 @@ jobs:
           node-version: '22'
 
       # GitHub, ACIK depolarda 60 gun hareket olmazsa zamanlanmis is'leri
-      # kendiliginden kapatiyor. Bu adim ~45 gunde bir depoyu "hareketli"
-      # gosterip kapanmayi onluyor. Yine de kapanirsa GitHub e-posta atiyor;
-      # Actions sekmesindeki "Enable workflow" dugmesi yeter.
-      - name: Workflow'u canli tut
+      # kendiliginden kapatiyor. Her ayin 1'inde ana dala bos bir commit atip
+      # depoyu "hareketli" gosteriyoruz. Ucuncu taraf bir action kullanmiyoruz:
+      # o depo kapanirsa butun is bizimle birlikte duruyor.
+      # Yine de kapanirsa GitHub e-posta atiyor; Actions sekmesindeki
+      # "Enable workflow" dugmesi yeter.
+      - name: Depoyu canli tut
         continue-on-error: true
-        uses: gautamkrishnar/keepalive-workflow@v2
+        run: |
+          if [ "$(date -u +%d)" = "01" ]; then
+            git config user.name "epg-bot"
+            git config user.email "epg-bot@users.noreply.github.com"
+            git commit --allow-empty -m "keepalive $(date -u '+%Y-%m-%d')"
+            git push origin HEAD:main
+          else
+            echo "bugun keepalive gunu degil, atlandi"
+          fi
 
       # Bir ulke bugun cekilemezse dunku dosyasi ayakta kalsin.
       - name: Onceki rehberi al
