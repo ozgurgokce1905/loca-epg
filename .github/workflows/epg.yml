@@ -1,4 +1,4 @@
-name: Türkiye EPG
+name: Loca EPG
 
 on:
   schedule:
@@ -10,7 +10,7 @@ permissions:
   contents: write
 
 jobs:
-  grab:
+  derle:
     runs-on: ubuntu-latest
     timeout-minutes: 120
     steps:
@@ -22,79 +22,79 @@ jobs:
 
       # GitHub, ACIK depolarda 60 gun hareket olmazsa zamanlanmis is'leri
       # kendiliginden kapatiyor. Bu adim ~45 gunde bir depoyu "hareketli"
-      # gosterip kapanmayi onluyor. Yine de kapanirsa GitHub e-posta
-      # atiyor; Actions sekmesindeki "Enable workflow" dugmesi yeter.
+      # gosterip kapanmayi onluyor. Yine de kapanirsa GitHub e-posta atiyor;
+      # Actions sekmesindeki "Enable workflow" dugmesi yeter.
       - name: Workflow'u canli tut
         continue-on-error: true
         uses: gautamkrishnar/keepalive-workflow@v2
 
-      # Bir kaynak bugun cekilemezse dunku verisi ayakta kalsin.
+      # Bir ulke bugun cekilemezse dunku dosyasi ayakta kalsin.
       - name: Onceki rehberi al
         continue-on-error: true
         run: |
+          mkdir -p onceki
           git fetch origin guide --depth 1 || true
-          if git show origin/guide:turkiye.xml > prev.xml 2>/dev/null; then
-            echo "onceki rehber: $(grep -o '<programme ' prev.xml | wc -l) program"
-          else
-            rm -f prev.xml
-            echo "onceki rehber yok"
+          if git rev-parse --verify origin/guide >/dev/null 2>&1; then
+            for f in $(git ls-tree --name-only origin/guide); do
+              case "$f" in
+                *.xml.gz) git show "origin/guide:$f" > "onceki/$f" ;;
+              esac
+            done
           fi
+          ls -lh onceki 2>/dev/null || echo "onceki rehber yok"
 
+      # ---- Turkiye icin ek kaynak: iptv-org toplayicisi -------------------
+      # epgshare dokumu zaten Turkiye'yi kapsiyor; bu adimlar Turkce program
+      # aciklamalarini zenginlestiriyor. Hepsi continue-on-error: biri
+      # calismazsa is durmuyor, derleyici eldekiyle devam ediyor.
       - name: Toplayiciyi indir
+        continue-on-error: true
         run: git clone --depth 1 -b master https://github.com/iptv-org/epg.git grabber
 
       - name: Bagimliliklari kur
+        continue-on-error: true
         working-directory: grabber
         run: npm install
 
       - name: TV Plus
         continue-on-error: true
+        timeout-minutes: 20
         working-directory: grabber
         run: npm run grab --- --sites=tvplus.com.tr --days=2 --maxConnections=5 --output=out/tvplus.xml
 
       - name: Digiturk
         continue-on-error: true
+        timeout-minutes: 20
         working-directory: grabber
         run: npm run grab --- --sites=digiturk.com.tr --days=2 --maxConnections=5 --output=out/digiturk.xml
 
       - name: Turksat Kablo
         continue-on-error: true
+        timeout-minutes: 20
         working-directory: grabber
         run: npm run grab --- --sites=turksatkablo.com.tr --days=2 --maxConnections=5 --output=out/turksat.xml
 
-      - name: D-Smart
-        continue-on-error: true
-        working-directory: grabber
-        run: npm run grab --- --sites=dsmart.com.tr --days=2 --maxConnections=5 --output=out/dsmart.xml
+      # ---- derleme --------------------------------------------------------
+      - name: Derle
+        run: node derle.js
 
-      # Hangi kaynak bos dondu, log'a bakmadan gorunsun.
-      - name: Kaynak ozeti
-        run: |
-          echo "| dosya | kanal | program |" >> $GITHUB_STEP_SUMMARY
-          echo "|---|---|---|" >> $GITHUB_STEP_SUMMARY
-          for f in grabber/out/*.xml; do
-            [ -f "$f" ] || continue
-            c=$(grep -o '<channel id' "$f" | wc -l)
-            p=$(grep -o '<programme ' "$f" | wc -l)
-            echo "| $(basename $f) | $c | $p |" >> $GITHUB_STEP_SUMMARY
-          done
-
-      - name: Birlestir
-        run: node merge.js grabber/out turkiye.xml prev.xml
-
-      - name: Sikistir
-        run: |
-          gzip -9 -c turkiye.xml > turkiye.xml.gz
-          ls -lh turkiye.xml turkiye.xml.gz
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "Yayinlanan: $(grep -o '<channel id' turkiye.xml | wc -l) kanal, $(grep -o '<programme ' turkiye.xml | wc -l) program" >> $GITHUB_STEP_SUMMARY
+      - name: Dosyalar
+        run: ls -lh out/
 
       - name: Yayinla
         run: |
           git config user.name "epg-bot"
           git config user.email "epg-bot@users.noreply.github.com"
+
+          # Depoyu sismemek icin yalnizca .gz yayinlaniyor. Tek istisna
+          # turkiye.xml: uygulamadaki eski adres ona bakiyor, kirilmasin.
+          mv out/*.xml.gz out/index.json .
+          [ -f out/turkiye.xml ] && mv out/turkiye.xml . || true
+          rm -rf out onceki grabber
+
           git checkout --orphan guide-new
           git rm -rf --cached . >/dev/null 2>&1 || true
-          git add -f turkiye.xml turkiye.xml.gz
+          git add -f *.xml.gz index.json
+          [ -f turkiye.xml ] && git add -f turkiye.xml || true
           git commit -m "EPG $(date -u '+%Y-%m-%d %H:%M UTC')"
           git push -f origin guide-new:guide
