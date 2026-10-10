@@ -1,0 +1,136 @@
+{
+  "guncelleme": "2026-10-10T17:56:20.003Z",
+  "ulkeler": [
+    {
+      "kod": "tr",
+      "ad": "Türkiye",
+      "durum": "tamam",
+      "kanal": 419,
+      "program": 36048,
+      "boyut": 1404325,
+      "kaynaklar": [
+        "digiturk.xml",
+        "tvplus.xml",
+        "epg_ripper_TR1.xml.gz",
+        "epg_ripper_TR3.xml.gz"
+      ]
+    },
+    {
+      "kod": "gb",
+      "ad": "Birleşik Krallık",
+      "durum": "tamam",
+      "kanal": 385,
+      "program": 26268,
+      "boyut": 1835461,
+      "kaynaklar": [
+        "epg_ripper_UK1.xml.gz"
+      ]
+    },
+    {
+      "kod": "us",
+      "ad": "Amerika Birleşik Devletleri",
+      "durum": "tamam",
+      "kanal": 753,
+      "program": 53574,
+      "boyut": 4542873,
+      "kaynaklar": [
+        "epg_ripper_US2.xml.gz"
+      ]
+    },
+    {
+      "kod": "de",
+      "ad": "Almanya",
+      "durum": "tamam",
+      "kanal": 250,
+      "program": 24381,
+      "boyut": 3874464,
+      "kaynaklar": [
+        "epg_ripper_DE1.xml.gz"
+      ]
+    },
+    {
+      "kod": "fr",
+      "ad": "Fransa",
+      "durum": "tamam",
+      "kanal": 532,
+      "program": 49460,
+      "boyut": 4153054,
+      "kaynaklar": [
+        "epg_ripper_FR1.xml.gz"
+      ]
+    },
+    {
+      "kod": "es",
+      "ad": "İspanya",
+      "durum": "tamam",
+      "kanal": 331,
+      "program": 4254,
+      "boyut": 533700,
+      "kaynaklar": [
+        "epg_ripper_ES1.xml.gz"
+      ]
+    },
+    {
+      "kod": "it",
+      "ad": "İtalya",
+      "durum": "tamam",
+      "kanal": 155,
+      "program": 13250,
+      "boyut": 1087278,
+      "kaynaklar": [
+        "epg_ripper_IT1.xml.gz"
+      ]
+    },
+    {
+      "kod": "pt",
+      "ad": "Portekiz",
+      "durum": "tamam",
+      "kanal": 174,
+      "program": 13476,
+      "boyut": 1033246,
+      "kaynaklar": [
+        "epg_ripper_PT1.xml.gz"
+      ]
+    },
+    {
+      "kod": "nl",
+      "ad": "Hollanda",
+      "durum": "tamam",
+      "kanal": 158,
+      "program": 20388,
+      "boyut": 1663176,
+      "kaynaklar": [
+        "epg_ripper_NL1.xml.gz"
+      ]
+    },
+    {
+      "kod": "ru",
+      "ad": "Rusya",
+      "durum": "kaynak yok",
+      "kanal": 0,
+      "program": 0
+    },
+    {
+      "kod": "gr",
+      "ad": "Yunanistan",
+      "durum": "tamam",
+      "kanal": 307,
+      "program": 19796,
+      "boyut": 1407498,
+      "kaynaklar": [
+        "epg_ripper_GR1.xml.gz"
+      ]
+    },
+    {
+      "kod": "bg",
+      "ad": "Bulgaristan",
+      "durum": "tamam",
+      "kanal": 69,
+      "program": 5309,
+      "boyut": 179906,
+      "kaynaklar": [
+        "epg_ripper_BG1.xml.gz"
+      ]
+    }
+  ]
+}
